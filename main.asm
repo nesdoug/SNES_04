@@ -70,7 +70,7 @@ main:
 ;	sta $4301 ; destination, vram data
 	ldx #.loword(Tiles2)
 	stx $4302 ; source
-	lda #^Tiles
+	lda #^Tiles2
 	sta $4304 ; bank
 	ldx #(End_Tiles2-Tiles2)
 	stx $4305 ; length
