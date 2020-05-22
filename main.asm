@@ -1,4 +1,4 @@
-; example 3 SNES code
+; example 4 SNES code
 
 .p816
 .smart
