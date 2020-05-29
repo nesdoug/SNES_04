@@ -63,11 +63,8 @@ main:
 	ldx #$3000
 	stx vram_addr ; set an address in the vram of $3000
 	
-;	lda #1
-;	sta $4300 ; transfer mode, 2 registers 1 write
-			  ; $2118 and $2119 are a pair Low/High
-;	lda #$18  ; $2118
-;	sta $4301 ; destination, vram data
+; 4300 and 4301 still hold the correct values for transfers to vram
+; and don't need to be rewritten here
 	ldx #.loword(Tiles2)
 	stx $4302 ; source
 	lda #^Tiles2
@@ -83,11 +80,7 @@ main:
 	ldx #$6000
 	stx vram_addr ; set an address in the vram of $6000
 	
-;	lda #1
-;	sta $4300 ; transfer mode, 2 registers 1 write
-			  ; $2118 and $2119 are a pair Low/High
-;	lda #$18  ; $2118
-;	sta $4301 ; destination, vram data
+; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap)
 	stx $4302 ; source
 	lda #^Tilemap
@@ -100,13 +93,9 @@ main:
 	
 ; DMA from Tilemap3 to VRAM	
 	ldx #$6800
-	stx vram_addr ; set an address in the vram of $6000
+	stx vram_addr ; set an address in the vram of $6800
 	
-;	lda #1
-;	sta $4300 ; transfer mode, 2 registers 1 write
-			  ; $2118 and $2119 are a pair Low/High
-;	lda #$18  ; $2118
-;	sta $4301 ; destination, vram data
+; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap2)
 	stx $4302 ; source
 	lda #^Tilemap2
@@ -119,13 +108,9 @@ main:
 	
 ; DMA from Tilemap3 to VRAM	
 	ldx #$7000
-	stx vram_addr ; set an address in the vram of $6000
+	stx vram_addr ; set an address in the vram of $7000
 	
-;	lda #1
-;	sta $4300 ; transfer mode, 2 registers 1 write
-			  ; $2118 and $2119 are a pair Low/High
-;	lda #$18  ; $2118
-;	sta $4301 ; destination, vram data
+; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap3)
 	stx $4302 ; source
 	lda #^Tilemap3
