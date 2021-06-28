@@ -3,7 +3,8 @@
 .p816
 .smart
 
-.include "defines.asm"
+.include "regs.asm"
+.include "variables.asm"
 .include "macros.asm"
 .include "init.asm"
 
@@ -14,8 +15,8 @@
 .segment "CODE"
 
 ; enters here in forced blank
-main:
-.a16 ; just a standardized setting from init code
+Main:
+.a16 ; the setting from init code
 .i16
 	phk
 	plb
@@ -24,11 +25,11 @@ main:
 	
 ; DMA from BG_Palette to CGRAM
 	A8
-	stz $2121 ; $2121 cg address = zero
+	stz CGADD ; $2121 cgram address = zero
 	
 	stz $4300 ; transfer mode 0 = 1 register write once
 	lda #$22  ; $2122
-	sta $4301 ; destination, pal data
+	sta $4301 ; destination, cgram data
 	ldx #.loword(BG_Palette)
 	stx $4302 ; source
 	lda #^BG_Palette
@@ -36,14 +37,14 @@ main:
 	ldx #256
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0
+	sta MDMAEN ; $420b start dma, channel 0
 	
 	
 ; DMA from Tiles to VRAM	
 	lda #V_INC_1 ; the value $80
-	sta vram_inc  ; $2115 = set the increment mode +1
+	sta VMAIN  ; $2115 = set the increment mode +1
 	ldx #$0000
-	stx vram_addr ; set an address in the vram of $0000
+	stx VMADDL ; set an address in the vram of $0000
 	
 	lda #1
 	sta $4300 ; transfer mode, 2 registers 1 write
@@ -57,11 +58,11 @@ main:
 	ldx #(End_Tiles-Tiles)
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0
+	sta MDMAEN ; $420b start dma, channel 0
 	
 ; DMA from Tiles2 to VRAM	
 	ldx #$3000
-	stx vram_addr ; set an address in the vram of $3000
+	stx VMADDL ; set an address in the vram of $3000
 	
 ; 4300 and 4301 still hold the correct values for transfers to vram
 ; and don't need to be rewritten here
@@ -72,13 +73,13 @@ main:
 	ldx #(End_Tiles2-Tiles2)
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0
+	sta MDMAEN ; $420b start dma, channel 0
 	
 	
 	
 ; DMA from Tilemap to VRAM	
 	ldx #$6000
-	stx vram_addr ; set an address in the vram of $6000
+	stx VMADDL ; set an address in the vram of $6000
 	
 ; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap)
@@ -88,12 +89,12 @@ main:
 	ldx #$700
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0	
+	sta MDMAEN ; $420b start dma, channel 0
 	
 	
 ; DMA from Tilemap2 to VRAM	
 	ldx #$6800
-	stx vram_addr ; set an address in the vram of $6800
+	stx VMADDL ; set an address in the vram of $6800
 	
 ; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap2)
@@ -103,12 +104,12 @@ main:
 	ldx #$700
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0
+	sta MDMAEN ; $420b start dma, channel 0
 	
 	
 ; DMA from Tilemap3 to VRAM	
 	ldx #$7000
-	stx vram_addr ; set an address in the vram of $7000
+	stx VMADDL ; set an address in the vram of $7000
 	
 ; removed duplicate writes to 4300 and 4301	
 	ldx #.loword(Tilemap3)
@@ -118,41 +119,62 @@ main:
 	ldx #$700
 	stx $4305 ; length
 	lda #1
-	sta $420b ; start dma, channel 0	
+	sta MDMAEN ; $420b start dma, channel 0	
 	
 	
 ; a is still 8 bit.
 	lda #1 ; mode 1, tilesize 8x8 all
-	sta bg_size_mode ; $2105
+	sta BGMODE ; $2105
 	
 ; 210b = tilesets for bg 1 and bg 2
 ; (210c for bg 3 and bg 4)
 ; steps of $1000 -321-321... bg2 bg1
-	stz bg12_tiles ; $210b BG 1 and 2 TILES at VRAM address $0000
+	stz BG12NBA ; $210b BG 1 and 2 TILES at VRAM address $0000
 	lda #$03
-	sta bg34_tiles ; $210c BG3 TILES at VRAM address $3000
+	sta BG34NBA ; $210c BG3 TILES at VRAM address $3000
 	
 	; 2107 map address bg 1, steps of $400... -54321yx
 	; y/x = map size... 0,0 = 32x32 tiles
 	; $6000 / $100 = $60
 	lda #$60 ; bg1 map at VRAM address $6000
-	sta tilemap1 ; $2107
+	sta BG1SC ; $2107
 	
 	lda #$68 ; bg1 map at VRAM address $6800
-	sta tilemap2 ; $2108
+	sta BG2SC ; $2108
 	
 	lda #$70 ; bg3 map at VRAM address $7000
-	sta tilemap3 ; $2109
+	sta BG3SC ; $2109
 
 	lda #BG_ALL_ON
-	sta main_screen ; $212c
+	sta TM ; $212c
 	
 	lda #FULL_BRIGHT ; $0f = turn the screen on (end forced blank)
-	sta fb_bright ; $2100
+	sta INIDISP ; $2100
 
 
-InfiniteLoop:	
-	jmp InfiniteLoop
+Infinite_Loop:	
+	A8
+	XY16
+	jsr Wait_NMI
+	
+	;code goes here
+
+	jmp Infinite_Loop
+	
+	
+	
+Wait_NMI:
+.a8
+.i16
+;should work fine regardless of size of A
+	lda in_nmi ;load A register with previous in_nmi
+@check_again:	
+	WAI ;wait for an interrupt
+	cmp in_nmi	;compare A to current in_nmi
+				;wait for it to change
+				;make sure it was an nmi interrupt
+	beq @check_again
+	rts
 	
 	
 
